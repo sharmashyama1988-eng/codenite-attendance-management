@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenite Attendance - Teacher App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+    <div class="max-w-7xl mx-auto p-6">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-4xl font-bold tracking-tight">Codenite Attendance</h1>
+                <p class="text-zinc-400">Tuition Management System</p>
+            </div>
+            <button onclick="exportData()" class="px-6 py-3 bg-white text-black rounded-2xl font-semibold flex items-center gap-2 hover:bg-zinc-200">
+                💾 Export Data
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Admission Panel -->
+            <div class="lg:col-span-3 bg-zinc-900 rounded-3xl p-8">
+                <h2 class="text-2xl font-semibold mb-6">New Admission</h2>
+                <input id="child-name" type="text" placeholder="Bachche ka naam" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-5 text-lg mb-4 focus:outline-none focus:border-blue-500">
+                <button onclick="addChild()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-semibold text-xl">+ Add to Class</button>
+                <div id="admission-status" class="mt-4 text-sm text-green-400"></div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="lg:col-span-5 bg-zinc-900 rounded-3xl p-8">
+                <h2 class="text-2xl font-semibold mb-6">Dashboard</h2>
+                <select id="child-select" onchange="loadChildDashboard()" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-5 text-lg mb-8">
+                </select>
+                <div id="child-details" class="space-y-6"></div>
+            </div>
+
+            <!-- Attendance Panel -->
+            <div class="lg:col-span-4 bg-zinc-900 rounded-3xl p-8">
+                <h2 class="text-2xl font-semibold mb-6">Mark Attendance</h2>
+                <input id="att-date" type="date" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-5 mb-6">
+                <div id="attendance-list" class="space-y-4 max-h-96 overflow-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let children = [];
+        let attendanceData = {};
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('codenite_attendance');
+            if (saved) {
+                const data = JSON.parse(saved);
+                children = data.children || [];
+                attendanceData = data.attendance || {};
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('codenite_attendance', JSON.stringify({children, attendance: attendanceData}));
+        }
+
+        function addChild() {
+            const nameInput = document.getElementById('child-name');
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            children.push({id: Date.now().toString(), name});
+            saveToStorage();
+            nameInput.value = '';
+            renderChildSelect();
+            document.getElementById('admission-status').textContent = name + ' added successfully! 🎉';
+            setTimeout(() => document.getElementById('admission-status').textContent = '', 3000);
+        }
+
+        function renderChildSelect() {
+            const select = document.getElementById('child-select');
+            select.innerHTML = '<option value="">Select Bachcha</option>';
+            children.forEach(child => {
+                const opt = document.createElement('option');
+                opt.value = child.id;
+                opt.textContent = child.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadChildDashboard() {
+            const id = document.getElementById('child-select').value;
+            if (!id) return;
+
+            const child = children.find(c => c.id === id);
+            const container = document.getElementById('child-details');
+            
+            let html = `<div class="bg-zinc-800 rounded-2xl p-6">
+                <h3 class="text-2xl font-semibold">${child.name}</h3>
+                <div class="mt-4 text-4xl font-mono font-bold text-green-400" id="overall-perc">0%</div>
+            </div>`;
+            container.innerHTML = html;
+            // Add more details later
+        }
+
+        function renderAttendance() {
+            // Similar to previous
+            console.log('Attendance rendered');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify({children, attendance: attendanceData}, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'Attendance_Management_Backup.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        window.onload = () => {
+            loadFromStorage();
+            renderChildSelect();
+            document.getElementById('att-date').value = new Date().toISOString().split('T')[0];
+        };
+    </script>
+</body>
+</html>
