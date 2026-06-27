@@ -1,0 +1,12 @@
+/* Modern Tuition Attendance Styles */
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
